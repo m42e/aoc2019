@@ -10,7 +10,6 @@ if part_one():
     sum = 0
     for value in inp:
         result = calc_amount(value)
-        print(f'{value:15}:{result}')
         sum += result
     print(sum)
 
@@ -25,5 +24,4 @@ if part_two():
             amount += result
             value = result
         sum += amount
-        print(amount)
     print(sum)

@@ -4,6 +4,7 @@ import argparse
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', '--sample', action='store_true')
+    parser.add_argument('-f', '--file', type=str, nargs='?')
     parser.add_argument('input', type=str, nargs='*')
     return parser.parse_known_args()
 
@@ -12,14 +13,15 @@ def get_input(transform):
     if p.input:
         return transform(p.input)
     inp = []
-    if p.sample:
-        with open('data/sample.txt') as f:
-            for line in f.readlines():
-                inp.append(transform(line.strip()))
+    if p.file:
+        f = open(p.file)
+    elif p.sample:
+        f = open('data/sample.txt')
     else:
-        with open('data/data.txt') as f:
-            for line in f.readlines():
-                inp.append(transform(line.strip()))
+        f = open('data/data.txt')
+    for line in f.readlines():
+        inp.append(transform(line.strip()))
+    f.close()
     if len(inp) == 1:
         return next(inp)
     return inp

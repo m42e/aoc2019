@@ -23,5 +23,5 @@ def get_input(transform):
         inp.append(transform(line.strip()))
     f.close()
     if len(inp) == 1:
-        return next(inp)
+        return inp[0]
     return inp

@@ -16,6 +16,8 @@ def common_member(a, b):
     else: 
         return("no common elements")
 
+import matplotlib.pyplot as plt
+
 wires = []
 for w in inp:
     current = (0,0)
@@ -37,11 +39,20 @@ for w in inp:
             current = (current[0] + x, current[1]+y)
             coordinates.append(current)
     wires.append(coordinates)
+
+
+plt.plot(*zip(*wires[0]))
+plt.plot(*zip(*wires[1]))
+plt.scatter(0,0, marker="D")
+
 if part_one():
     commons = common_member(wires[0], wires[1])
     def hd(x):
         return x[0]+x[1]
+    minimal = sorted(commons, key=hd)[1]
     print(sorted(commons, key=hd))
+    plt.scatter(*zip(*commons))
+    plt.scatter(*minimal, marker="x", color="#000000")
 
 if part_two():
     m = 100000
@@ -49,3 +60,4 @@ if part_two():
         if c != (0,0):
             m = min(m, wires[0].index(c) + wires[1].index(c))
     print(m)
+plt.show()

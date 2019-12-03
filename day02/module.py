@@ -7,140 +7,65 @@ def inp_decode(x):
 
 inp = get_input(inp_decode)
 
-def opcode1(index):
-    print(index)
-    print(inp)
-    pos = inp[index+3]
-    print(inp[inp[index+1]])
-    print(inp[inp[index+2]])
-    inp[pos] = inp[inp[index+1]] + inp[inp[index+2]]
-    return index + 4
+class processor(object):
 
-def opcode2(index):
-    print(index)
-    print(inp)
-    pos = inp[index+3]
-    inp[pos] = inp[inp[index+1]] * inp[inp[index+2]]
-    return index + 4
+    def __init__(self, lst):
+        self.olst = lst.copy()
 
-def opcode_exit(index):
-    print(inp)
-    sys.exit()
+    opcodes = {
+        1: 'opcode1',
+        2: 'opcode2',
+        99: 'opcode_exit',
+        'default': 'opcode_none',
+    }
+    def opcode1(self, index):
+        pos = self.lst[index+3]
+        self.lst[pos] = self.lst[self.lst[index+1]] + self.lst[self.lst[index+2]]
+        return index + 4
 
-def opcode_none(x):
-    print(x)
-    print(inp)
-    sys.exit()
-    return x
+    def opcode2(self, index):
+        pos = self.lst[index+3]
+        self.lst[pos] = self.lst[self.lst[index+1]] * self.lst[self.lst[index+2]]
+        return index + 4
 
-opcodes = [
-    opcode_none,
-    opcode1,
-    opcode2,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_none,
-    opcode_exit
-]
+    def opcode_exit(self, index):
+        self._processing = False
+
+    def opcode_none(self, x):
+        return x
+
+    def process(self, verb, noun):
+        self.lst = self.olst.copy()
+        self._processing = True
+        index = 0
+        self.lst[1] = verb
+        self.lst[2] = noun
+        print(verb, noun)
+        while self._processing:
+            print(index, end=' ')
+            index = getattr(self, self.opcodes[self.lst[index]])(index)
+        print()
+        return self.lst[0]
+
+    def process_till(self, result):
+        for i in range(0, len(self.olst)):
+            for j in range(0, len(self.olst)):
+                res = p.process(i, j)
+                if res == result:
+                    return 100*i+j
+
+
 
 if part_one():
-    index = 0
-    while True:
-        index = opcodes[inp[index]](index)
+    p = processor(inp)
+    result = p.process(12, 2)
+    print('result')
+    print(result)
     pass
 
 if part_two():
+    p = processor(inp)
+    result = p.process_till(19690720)
+    print('result 2')
+    print(result)
     pass

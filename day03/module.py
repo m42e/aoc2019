@@ -1,5 +1,6 @@
 from aoc.input import get_input
 from aoc.partselector import part_one, part_two
+import matplotlib.pyplot as plt
 
 def inpfmt(x):
     return x.split(',')
@@ -15,8 +16,6 @@ def common_member(a, b):
         return(a_set.intersection(b_set))   
     else: 
         return("no common elements")
-
-import matplotlib.pyplot as plt
 
 wires = []
 for w in inp:
@@ -41,9 +40,9 @@ for w in inp:
     wires.append(coordinates)
 
 
-plt.plot(*zip(*wires[0]))
-plt.plot(*zip(*wires[1]))
-plt.scatter(0,0, marker="D")
+plt.plot(*zip(*wires[0]), zorder=1)
+plt.plot(*zip(*wires[1]), zorder=1)
+plt.scatter(0,0, marker="D", zorder=3)
 
 if part_one():
     commons = common_member(wires[0], wires[1])
@@ -51,8 +50,8 @@ if part_one():
         return x[0]+x[1]
     minimal = sorted(commons, key=hd)[1]
     print(sorted(commons, key=hd))
-    plt.scatter(*zip(*commons))
-    plt.scatter(*minimal, marker="x", color="#000000")
+    plt.scatter(*zip(*commons), color="#FF0000", zorder=2)
+    plt.scatter(*minimal, marker="x", color="#0000FF", zorder=3)
 
 if part_two():
     m = 100000

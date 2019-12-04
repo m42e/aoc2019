@@ -1,5 +1,6 @@
 from aoc.input import get_input
-from aoc.partselector import part_one, part_two
+from aoc.partselector import part_one, part_two, draw
+import time
 import matplotlib.pyplot as plt
 
 def inpfmt(x):
@@ -39,10 +40,10 @@ for w in inp:
             coordinates.append(current)
     wires.append(coordinates)
 
-
-plt.plot(*zip(*wires[0]), zorder=1)
-plt.plot(*zip(*wires[1]), zorder=1)
-plt.scatter(0,0, marker="D", zorder=3)
+if draw():
+    plt.plot(*zip(*wires[0]), zorder=1)
+    plt.plot(*zip(*wires[1]), zorder=1)
+    plt.scatter(0,0, marker="D", zorder=3)
 
 if part_one():
     commons = common_member(wires[0], wires[1])
@@ -50,13 +51,17 @@ if part_one():
         return x[0]+x[1]
     minimal = sorted(commons, key=hd)[1]
     print(sorted(commons, key=hd))
-    plt.scatter(*zip(*commons), color="#FF0000", zorder=2)
-    plt.scatter(*minimal, marker="x", color="#0000FF", zorder=3)
+    if draw():
+        plt.scatter(*zip(*commons), color="#FF0000", zorder=2)
+        plt.scatter(*minimal, marker="x", color="#0000FF", zorder=3)
 
 if part_two():
+    t0 = time.time()
     m = 100000
     for c in commons:
         if c != (0,0):
             m = min(m, wires[0].index(c) + wires[1].index(c))
-    print(m)
-plt.show()
+    t1 = time.time()
+    print(m, t1-t0)
+if draw():
+    plt.show()

@@ -4,6 +4,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-A', action='store_true')
     parser.add_argument('-B', action='store_true')
+    parser.add_argument('-G', action='store_true')
     return parser.parse_known_args()
 
 def part_one():
@@ -17,3 +18,9 @@ def part_two():
     if p.A:
         return False
     return True
+
+def draw():
+    p = parse_args()[0]
+    if p.G:
+        return True
+    return Falsa

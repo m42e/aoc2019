@@ -15,7 +15,16 @@ if part_one():
             else:
                 count += 1
         return count
-    print (p1())
+    def p1b():
+        count = 0
+        for x in range(256310, 732736):
+            for i in range(1,7):
+                if x/pow(10,i) < x/pow(10,i-1):
+                    break
+            else:
+                count += 1
+        return count
+    print (p1b())
     t = timeit.Timer(p1)
     pass
 

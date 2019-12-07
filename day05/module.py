@@ -27,18 +27,15 @@ class processor(object):
         'default': 'opcode_none',
     }
 
-    def get_param(self, index, opcode, param):
+    def get_param(self, index, opcode, param, force_positional=False):
         val = self.lst[index+param]
-        if opcode%100 == 3 and param == 1:
+        if force_positional or ((opcode // pow(10, param+1)) % 10 == 1):
             return val
-        if (opcode // pow(10, param+1)) % 10 == 0 and param != 3:
-            return self.lst[val]
-        else:
-            return val
+        return self.lst[val]
 
     def opcode1(self, index):
         opcode = self.lst[index] % 10000
-        pos = self.get_param(index, opcode, 3)
+        pos = self.get_param(index, opcode, 3, force_positional=True)
         p1 = self.get_param(index, opcode, 1)
         p2 = self.get_param(index, opcode, 2)
         res = self.get_param(index, opcode, 1) + self.get_param(index, opcode, 2)
@@ -47,13 +44,13 @@ class processor(object):
 
     def opcode2(self, index):
         opcode = self.lst[index] % 10000
-        pos = self.get_param(index, opcode, 3)
+        pos = self.get_param(index, opcode, 3, force_positional=True)
         self.lst[pos] = self.get_param(index, opcode, 1) * self.get_param(index, opcode, 2)
         return index + 4
 
     def opcode3(self, index):
         opcode = self.lst[index]
-        pos = self.get_param(index, opcode, 1)
+        pos = self.get_param(index, opcode, 1, force_positional=True)
         self.lst[pos] = self.tinput
         return index + 2
 
@@ -81,13 +78,13 @@ class processor(object):
 
     def opcode7(self, index):
         opcode = self.lst[index] % 10000
-        pos = self.get_param(index, opcode, 3)
+        pos = self.get_param(index, opcode, 3, force_positional=True)
         self.lst[pos] = 1 if self.get_param(index, opcode, 1) < self.get_param(index, opcode, 2) else 0
         return index + 4
 
     def opcode8(self, index):
         opcode = self.lst[index] % 10000
-        pos = self.get_param(index, opcode, 3)
+        pos = self.get_param(index, opcode, 3, force_positional=True)
         self.lst[pos] = 1 if self.get_param(index, opcode, 1) == self.get_param(index, opcode, 2) else 0
         return index + 4
 
@@ -104,7 +101,6 @@ class processor(object):
         index = 0
         while self._processing:
             index = getattr(self, self.opcodes[self.lst[index]%100])(index)
-        print(self.output)
         return self.lst[0]
 
     def process_till(self, result):
@@ -119,13 +115,9 @@ class processor(object):
 if part_one():
     p = processor(inp, 1)
     result = p.process(12, 2)
-    print('result')
-    print(result)
-    pass
+    print(p.output)
 
 if part_two():
     p = processor(inp, 5)
-    result = p.process_till(19690720)
-    print('result 2')
-    print(result)
-    pass
+    result = p.process(1,19690720)
+    print(p.output)

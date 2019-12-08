@@ -1,42 +1,31 @@
-from aoc.input import get_input
-from aoc.partselector import part_one, part_two
+import aoc
 from collections import Counter
 
 def inpfct(x):
     return list(map(int, list(x)))
-inp = get_input(inpfct)
+
+inp = aoc.get_input(inpfct)
+
+_logger = aoc.get_logger(__name__)
 
 width=25
 height=6
 n = width*height
 
-if part_one():
-    cnt = 0
-    layers = []
-    layers = [inp[i:i+n] for i in range(0, len(inp), n)]
-    lowest = 10000
-    for i, l in enumerate(layers):
-        c = Counter(l)
-        lowest = min(c[0], lowest)
-        if lowest == c[0]:
-            result = c[1]*c[2]
-            ind = i
-    print(result)
+layers = [inp[i:i+n] for i in range(0, len(inp), n)]
+if aoc.part_one():
+    _logger.info('%s Layers found (size: %s x %s)', len(layers), width, height)
+    clayers = sorted(list(map(Counter, layers)), key=lambda x: x[0])
+    print(clayers[0][1]*clayers[0][2])
 
-
-
-
-    pass
-
-if part_two():
+if aoc.part_two():
+    print()
     cnt = 0
     layer = [2] * n
-    while cnt < len(inp):
-        for y in range(0, height):
-            for x in range(0, width):
-                if layer[y*width+x] == 2:
-                    layer[y*width+x] = inp[cnt]
-                cnt += 1
+    for l in layers:
+        for i, y in enumerate(l):
+            if layer[i] == 2:
+                layer[i] = y
     for y in range(0, height):
         for x in range(0, width):
             if layer[y*width+x] == 1:
@@ -44,4 +33,3 @@ if part_two():
             else:
                 print(' ', end='')
         print()
-    pass

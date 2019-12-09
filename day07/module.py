@@ -1,14 +1,16 @@
 import sys
-import aoc
+from aoc.input import get_input
+from aoc.partselector import part_one, part_two
 import itertools
 import logging
 
-_logger = aoc.get_logger(__name__)
+logging.basicConfig(level=logging.DEBUG)
+_logger = logging.getLogger(__name__)
 
 def inp_decode(x):
     return list(map(int,x.split(',')))
 
-inp = aoc.get_input(inp_decode)
+inp = get_input(inp_decode)
 
 class processor(object):
 
@@ -131,7 +133,7 @@ class processor(object):
 
 
 
-if aoc.part_one():
+if part_one():
     max_ = 0
     in_ = 0
     for x in itertools.permutations([0, 1, 2, 3, 4], 5):
@@ -146,7 +148,7 @@ if aoc.part_one():
         pass
     print(max_)
 
-if aoc.part_two():
+if part_two():
     max_ = 0
     in_ = 0
     for x in itertools.permutations([5, 6, 7, 8, 9], 5):

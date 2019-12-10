@@ -14,6 +14,9 @@ def visible(my_x,my_y,inp):
     for x in range(0, len(inp[0])):
         checkpoints.append((x, 0))
         checkpoints.append((x, len(inp)-1))
+    for y in range(0, len(inp)):
+        checkpoints.append((0, y))
+        checkpoints.append((len(inp[0])-1), y)
             
 
 def p1():

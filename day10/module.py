@@ -30,7 +30,7 @@ def visible(my_x,my_y,inp):
             continue
         for cur_x in range(0, len(inp[1])):
             cur_y = cur_x * r
-            if cur_y.is_integer():
+            if cur_y.is_integer() and cur_y < len(inp):
                 if inp[int(cur_y)][cur_x] == '#':
                     rs[r] = 1
                     break

@@ -39,7 +39,6 @@ def p1():
     for y, row in enumerate(inp):
         for x, col in enumerate(row):
             results[(x,y)] = visible(x,y,inp)
-            print (x,y, col)
     return None
 
 def p2():

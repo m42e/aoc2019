@@ -12,7 +12,7 @@ _logger = get_logger()
 def p1():
     print(inp)
     for y, row in enumerate(inp):
-        for y, col in enumerate(row):
+        for x, col in enumerate(row):
             print (x,y, col)
     return None
 

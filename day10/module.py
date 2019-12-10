@@ -20,15 +20,18 @@ def visible(my_x,my_y,inp):
     if (my_x, my_y) in checkpoints:
         checkpoints.remove((my_x, my_y))
 
+    rs = {}
     for cp in checkpoints:
         count = 0
         if (cp[0] - my_x) == 0:
             continue
         r = (1.0*cp[1] - my_y)/(cp[0] - my_x)
+        if r in rs:
+            continue
         for cur_x in range(0, len(inp[1])):
             cur_y = cur_x * r
             if cur_y.is_integer():
-                count += 1
+                rs[r] = 1
                 break
                 print(cur_x, int(cur_y))
     print(count)

@@ -230,14 +230,15 @@ class p2(object):
         return statdata
 
 
-def heatmap(data, filename):
+def heatmap(data, filename, show=True):
     fig, ax = plt.subplots()
     for d, m in [("read", "."), ("written", "o"), ("exec", "x")]:
         ax.scatter(*zip(*data[d].items()), alpha=0.5, marker=m, label=d)
     ax.grid()
     ax.legend()
     fig.savefig(filename)
-    plt.show()
+    if show:
+        plt.show()
 
 
 def print_memory_info(p):
@@ -253,6 +254,10 @@ def print_memory_info(p):
         else:
             print(f"{m}")
 
+def print_stats(stat):
+    for n, v in stat.items():
+        print(f"{n}: {v}")
+
 
 p = p2()
 
@@ -263,8 +268,7 @@ if aoc.part_one():
     print(f"processed: {p.steps} steps")
     print(f"Result: {p.output}")
     stat = p.statistics()
-    for n, v in stat.items():
-        print(f"{n}: {v}")
+    print_stats(stat)
 if aoc.part_two():
     p.hardreset()
     p.add_input(2)
@@ -273,6 +277,5 @@ if aoc.part_two():
     print(f"processed: {p.steps} steps")
     print(f"Result: {p.output}")
     stat = p.statistics()
-    for n, v in stat.items():
-        print(f"{n}: {v}")
-    heatmap(stat, "exec2.png")
+    print_stats(stat)
+    heatmap(stat, "exec2.png", show=False)

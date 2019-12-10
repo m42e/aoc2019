@@ -18,6 +18,13 @@ def visible(my_x,my_y,inp):
         checkpoints.append((0, y))
         checkpoints.append((len(inp[0])-1, y))
 
+    for cp in checkpoints:
+        r = (cp[0] - my_x)/(cp[1] - my_y)
+        for cur_x in range(0, len(inp[1])):
+            cur_y = cur_x * r
+            if cur_x.is_integer() and cur_y.is_integer():
+                print(cur_x, cur_y)
+
 
 def p1():
     results = {}

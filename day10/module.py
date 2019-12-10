@@ -10,6 +10,7 @@ inp = get_input(inp_decode)
 _logger = get_logger()
 
 def p1():
+    print(inp)
     return None
 
 def p2():

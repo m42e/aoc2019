@@ -25,7 +25,7 @@ def visible(my_x,my_y,inp):
             for cur_x in range(0, len(inp[1])):
                 cur_y = cur_x * r
                 if cur_y.is_integer():
-                    print(cur_x, cur_y)
+                    print(cur_x, int(cur_y))
 
 
 def p1():

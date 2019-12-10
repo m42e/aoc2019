@@ -21,6 +21,7 @@ def visible(my_x,my_y,inp):
 
     for cp in checkpoints:
         r = (cp[0] - my_x)/(1.0*cp[1] - my_y)
+        print(r)
         for cur_x in range(0, len(inp[1])):
             cur_y = cur_x * r
             if cur_x.is_integer() and cur_y.is_integer():

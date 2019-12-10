@@ -10,8 +10,11 @@ inp = get_input(inp_decode)
 _logger = get_logger()
 
 def visible(my_x,my_y,inp):
+    checkpoints = []
     for x in range(0, len(inp[0])):
-        for y in range(0, len(inp)):
+        checkpoints.append((x, 0))
+        checkpoints.append((x, len(inp)-1))
+            
 
 def p1():
     results = {}

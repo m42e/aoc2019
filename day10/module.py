@@ -35,7 +35,7 @@ def visible(my_x,my_y,inp):
                     rs[r] = 1
                     break
 
-    print(len(rs))
+    print(x,y,len(rs))
 
 
 def p1():

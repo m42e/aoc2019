@@ -10,7 +10,6 @@ inp = get_input(inp_decode)
 _logger = get_logger()
 
 def p1():
-    print(inp)
     for y, row in enumerate(inp):
         for x, col in enumerate(row):
             print (x,y, col)

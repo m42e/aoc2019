@@ -19,7 +19,6 @@ def main():
     if part_one():
         result = p1()
         import time
-        time.sleep(20)
         print(f'Result: {result}')
 
     if part_two():

@@ -9,9 +9,15 @@ def inp_decode(x):
 inp = get_input(inp_decode)
 _logger = get_logger()
 
+def visible(my_x,my_y,inp):
+    for x in range(0, len(inp[0])):
+        for y in range(0, len(inp)):
+
 def p1():
+    results = {}
     for y, row in enumerate(inp):
         for x, col in enumerate(row):
+            results[(x,y)] = visible(x,y,inp)
             print (x,y, col)
     return None
 

@@ -20,11 +20,12 @@ def visible(my_x,my_y,inp):
     checkpoints.remove((my_x, my_y))
 
     for cp in checkpoints:
-        r = (cp[0] - my_x)/(1.0*cp[1] - my_y)
-        for cur_x in range(0, len(inp[1])):
-            cur_y = cur_x * r
-            if cur_y.is_integer():
-                print(cur_x, cur_y)
+        if (cp[1] - my_y) != 0:
+            r = (cp[0] - my_x)/(1.0*cp[1] - my_y)
+            for cur_x in range(0, len(inp[1])):
+                cur_y = cur_x * r
+                if cur_y.is_integer():
+                    print(cur_x, cur_y)
 
 
 def p1():

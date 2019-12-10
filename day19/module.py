@@ -1,10 +1,28 @@
+import sys
+from collections import defaultdict
 from aoc.input import get_input
-from aoc.partselector import part_one, part_two
+from aoc.partselector import part_one, part_two, get_logger
 
-inp = get_input(int)
+def inp_decode(x):
+    return list(map(int,x.split(',')))
 
-if part_one():
-    pass
+inp = get_input(inp_decode)
+_logger = get_logger()
 
-if part_two():
-    pass
+def p1():
+    return None
+
+def p2():
+    return None
+
+def main():
+    if part_one():
+        result = p1()
+        print(f'Result: {result}')
+
+    if part_two():
+        result = p2()
+        print(f'Result: {result}')
+
+if __name__ == "__main__":
+    main()

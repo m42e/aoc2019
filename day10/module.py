@@ -17,7 +17,8 @@ def visible(my_x,my_y,inp):
     for y in range(0, len(inp)):
         checkpoints.append((0, y))
         checkpoints.append((len(inp[0])-1, y))
-    checkpoints.remove((my_x, my_y))
+    if (my_x, my_y) in checkpoints:
+        checkpoints.remove((my_x, my_y))
 
     for cp in checkpoints:
         count = 0
@@ -30,6 +31,7 @@ def visible(my_x,my_y,inp):
                 count += 1
                 break
                 print(cur_x, int(cur_y))
+    print(count)
 
 
 def p1():

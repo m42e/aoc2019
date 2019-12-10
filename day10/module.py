@@ -17,6 +17,7 @@ def visible(my_x,my_y,inp):
     for y in range(0, len(inp)):
         checkpoints.append((0, y))
         checkpoints.append((len(inp[0])-1, y))
+    checkpoints.remove((my_x, my_y))
 
     for cp in checkpoints:
         r = (cp[0] - my_x)/(cp[1] - my_y)

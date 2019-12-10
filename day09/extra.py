@@ -1,25 +1,28 @@
 import sys
 from collections import defaultdict, namedtuple
 import aoc
+import matplotlib.pyplot as plt
+
 
 def inp_decode(x):
-    return list(map(int,x.split(',')))
+    return list(map(int, x.split(",")))
+
 
 inp = aoc.get_input(inp_decode)
 _logger = aoc.get_logger()
 
-opcode = namedtuple('opcode', ['name', 'parameter'])
+opcode = namedtuple("opcode", ["name", "parameter"])
 opcodes = {
-    1: opcode(name='add', parameter='iio'),
-    2: opcode(name='mul', parameter='iio'),
-    3: opcode(name='inp', parameter='o'),
-    4: opcode(name='out', parameter='i'),
-    5: opcode(name='jit', parameter='ii'),
-    6: opcode(name='jif', parameter='ii'),
-    7: opcode(name='lt ', parameter='iio'),
-    8: opcode(name='eq ', parameter='iio'),
-    9: opcode(name='arb', parameter='i'),
-    99: opcode(name='hlt', parameter=''),
+    1: opcode(name="add", parameter="iio"),
+    2: opcode(name="mul", parameter="iio"),
+    3: opcode(name="inp", parameter="o"),
+    4: opcode(name="out", parameter="i"),
+    5: opcode(name="jit", parameter="ii"),
+    6: opcode(name="jif", parameter="ii"),
+    7: opcode(name="lt ", parameter="iio"),
+    8: opcode(name="eq ", parameter="iio"),
+    9: opcode(name="arb", parameter="i"),
+    99: opcode(name="hlt", parameter=""),
 }
 
 
@@ -28,21 +31,23 @@ class disassembler(object):
         pos = 0
         commands = []
         while pos < len(prog):
-            assemblerline = [f'[{pos:< 5}]']
+            assemblerline = [f"[{pos:< 5}]"]
             commandcode = prog[pos] % 100
             try:
                 assemblerline.append(opcodes[commandcode].name)
                 for pindex, param in enumerate(opcodes[commandcode].parameter, start=1):
-                    encoding = ((prog[pos] // pow(10, pindex+1)) % 10)
-                    modes = {0: '*', 1: '', 2: '@'}
+                    encoding = (prog[pos] // pow(10, pindex + 1)) % 10
+                    modes = {0: "*", 1: "", 2: "@"}
                     pv = prog[pos + pindex]
-                    assemblerline.append(f'{modes[encoding]}{pv}')
+                    assemblerline.append(f"{modes[encoding]}{pv}")
                 pos += len(opcodes[commandcode].parameter) + 1
             except:
-                assemblerline.append('XXX')
+                assemblerline.append("XXX")
                 pos += 1
             finally:
-                commands.append(' '.join(map(lambda x: '{0:>10}'.format(x), assemblerline)))
+                commands.append(
+                    " ".join(map(lambda x: "{0:>10}".format(x), assemblerline))
+                )
         return commands
 
 
@@ -53,7 +58,7 @@ class p2(object):
 
     def hardreset(self):
         self.tinput = []
-        self.mem = defaultdict(lambda: [{'r': 0, 'v': 0, 'e': 0, 'w': {}}])
+        self.mem = defaultdict(lambda: [{"r": 0, "v": 0, "e": 0, "w": {}}])
         self.reset()
 
     def reset(self):
@@ -65,7 +70,7 @@ class p2(object):
 
     def set_prog(self, prog):
         for i, f in enumerate(prog):
-            self.mem[i] = [{'v': f, 'r': 0, 'e': 0, 'w': {}}]
+            self.mem[i] = [{"v": f, "r": 0, "e": 0, "w": {}}]
 
     def add_input(self, inp):
         self.tinput.append(inp)
@@ -73,17 +78,22 @@ class p2(object):
     def fetch_and_decode(self):
         opcode = self.read(self.ip, execute=True)
         params = [opcode % 100]
-        self.decodeinfo = {'ip': self.ip, 'opcode': opcode}
+        self.decodeinfo = {"ip": self.ip, "opcode": opcode}
         for pindex, param in enumerate(opcodes[params[0]].parameter, start=1):
-            encoding = ((opcode // pow(10, pindex+1)) % 10)
+            encoding = (opcode // pow(10, pindex + 1)) % 10
             val = self.read(self.ip + pindex)
             if encoding == 2:
                 val += self.relativebase[-1]
-            self.decodeinfo[pindex] = {'position': self.ip+pindex, 'value':val, 'mode': encoding, 'paramtype': param}
-            if param == 'i':
+            self.decodeinfo[pindex] = {
+                "position": self.ip + pindex,
+                "value": val,
+                "mode": encoding,
+                "paramtype": param,
+            }
+            if param == "i":
                 if encoding == 0 or encoding == 2:
                     val = self.read(val)
-            self.decodeinfo[pindex]['decoded'] = val
+            self.decodeinfo[pindex]["decoded"] = val
             params.append(val)
         return params
 
@@ -92,28 +102,30 @@ class p2(object):
         fetched = self.fetch_and_decode()
         commandcode = fetched[0]
         params = fetched[1:]
-        getattr(self, f'opcode{commandcode:02d}')(params)
-        self.processed_steps.append({
-            'decodinginfo': self.decodeinfo,
-            'opcode': commandcode,
-            'ip': self.ip,
-            'params': params,
-        })
+        getattr(self, f"opcode{commandcode:02d}")(params)
+        self.processed_steps.append(
+            {
+                "decodinginfo": self.decodeinfo,
+                "opcode": commandcode,
+                "ip": self.ip,
+                "params": params,
+            }
+        )
 
     def run(self):
         self._processing = True
-        while(self._processing):
+        while self._processing:
             self.step()
 
     def write(self, pos, value):
-        self.mem[pos].append({'v': value, 'r': 0, 'e': 0, 'w': self.decodeinfo})
-        return self.mem[pos][-1]['v']
+        self.mem[pos].append({"v": value, "r": 0, "e": 0, "w": self.decodeinfo})
+        return self.mem[pos][-1]["v"]
 
     def read(self, pos, execute=False):
         if execute:
-            self.mem[pos][-1]['e'] += 1
-        self.mem[pos][-1]['r'] += 1
-        return self.mem[pos][-1]['v']
+            self.mem[pos][-1]["e"] += 1
+        self.mem[pos][-1]["r"] += 1
+        return self.mem[pos][-1]["v"]
 
     def opcode01(self, params):
         res = params[0] + params[1]
@@ -127,7 +139,7 @@ class p2(object):
 
     def opcode03(self, params):
         if self.tinput_pos == len(self.tinput):
-            _logger.debug('read, no input available')
+            _logger.debug("read, no input available")
         elif isinstance(self.tinput, list):
             res = self.tinput[self.tinput_pos]
             self.tinput_pos += 1
@@ -177,55 +189,90 @@ class p2(object):
         m_id = -1
         m_val = 0
         for i, m in self.mem.items():
-            s = sum(map(lambda x: x[what] if str(x[what]).isnumeric() else 1, m))
+            s = sum(
+                map(
+                    lambda x: x[what]
+                    if str(x[what]).isnumeric()
+                    else len(str(x[what])) > 5,
+                    m,
+                )
+            )
             if m_val < s:
                 m_val = s
                 m_id = i
         return m_id, m_val
 
+    def get_mem_stat(self, what):
+        stat = {}
+        for i, m in self.mem.items():
+            s = sum(
+                map(
+                    lambda x: x[what]
+                    if str(x[what]).isnumeric()
+                    else len(str(x[what])) > 5,
+                    m,
+                )
+            )
+            if s == 0:
+                continue
+            stat[i] = s
+        return stat
+
     def statistics(self):
         statdata = {}
-        statdata['steps'] = self.steps
-        statdata['most read'], statdata['most read count'] = self.get_mem_sum('r')
-        statdata['most exec'], statdata['most exec count'] = self.get_mem_sum('e')
-        statdata['most write'], statdata['most write count'] = self.get_mem_sum('w')
+        statdata["steps"] = self.steps
+        statdata["most read"], statdata["most read count"] = self.get_mem_sum("r")
+        statdata["most exec"], statdata["most exec count"] = self.get_mem_sum("e")
+        statdata["most write"], statdata["most write count"] = self.get_mem_sum("w")
+        statdata["exec"] = self.get_mem_stat("e")
+        statdata["read"] = self.get_mem_stat("r")
+        statdata["written"] = self.get_mem_stat("w")
         return statdata
 
 
-def main():
-    p = p2()
+def heatmap(data, filename):
+    fig, ax = plt.subplots()
+    for d, m in [("read", "."), ("written", "o"), ("exec", "x")]:
+        ax.scatter(*zip(*data[d].items()), alpha=0.5, marker=m, label=d)
+    ax.grid()
+    ax.legend()
+    fig.savefig(filename)
+    plt.show()
+
+
+def print_memory_info(p):
+    for mi, m in p.mem.items():
+        print(f"{mi:>5}", end=" ")
+        if len(m) > 1:
+            for mn in m:
+                if mn["e"] != 0:
+                    print("!" * 100)
+                print(f'    v: {mn["v"]} r: {mn["r"]} e: {mn["e"]} w: ')
+                for pii, pi in mn["w"].items():
+                    print(f"        {pii}: {pi}")
+        else:
+            print(f"{m}")
+
+
+p = p2()
+
+if aoc.part_one():
     p.add_input(1)
     p.set_prog(inp)
     p.run()
-    print(f'processed: {p.steps} steps')
-    print(f'Result: {p.output}')
-    for n, v in p.statistics().items():
-        print(f'{n}: {v}')
-    if False:
-        for mi, m in p.mem.items():
-            print(f'{mi:>5}', end = ' ')
-            if len(m) > 1:
-                for mn in m:
-                    if mn['e'] != 0:
-                        print('!'*100)
-                    print(f'    v: {mn["v"]} r: {mn["r"]} e: {mn["e"]} w: ')
-                    for pii, pi in mn['w'].items():
-                        print(f'        {pii}: {pi}')
-            else:
-                print(f'{m}')
-
+    print(f"processed: {p.steps} steps")
+    print(f"Result: {p.output}")
+    stat = p.statistics()
+    for n, v in stat.items():
+        print(f"{n}: {v}")
+if aoc.part_two():
     p.hardreset()
     p.add_input(2)
     p.set_prog(inp)
     p.run()
-    print(f'processed: {p.steps} steps')
-    print(f'Result: {p.output}')
-    for n, v in p.statistics().items():
-        print(f'{n}: {v}')
-    d = disassembler()
-    r = d.disassemble(inp)
-
-    #print('\n'.join(r))
-
-if __name__ == "__main__":
-    main()
+    print(f"processed: {p.steps} steps")
+    print(f"Result: {p.output}")
+    stat = p.statistics()
+    for n, v in stat.items():
+        print(f"{n}: {v}")
+    heatmap(stat, "exec2.png")

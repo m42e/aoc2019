@@ -4,7 +4,7 @@ from aoc.input import get_input
 from aoc.partselector import part_one, part_two, get_logger
 
 def inp_decode(x):
-    return x
+    return list(x)
 
 inp = get_input(inp_decode)
 _logger = get_logger()

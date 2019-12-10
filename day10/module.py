@@ -18,7 +18,6 @@ def p2():
 def main():
     if part_one():
         result = p1()
-        import time
         print(f'Result: {result}')
 
     if part_two():

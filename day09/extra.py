@@ -254,6 +254,7 @@ def print_memory_info(p):
         else:
             print(f"{m}")
 
+
 def print_stats(stat):
     for n, v in stat.items():
         print(f"{n}: {v}")

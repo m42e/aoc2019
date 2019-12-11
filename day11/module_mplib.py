@@ -3,7 +3,9 @@ import time
 import termcolor
 from collections import defaultdict, namedtuple
 import aoc
+import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
 
 
 def inp_decode(x):
@@ -50,7 +52,6 @@ class disassembler(object):
                     " ".join(map(lambda x: "{0:>10}".format(x), assemblerline))
                 )
         return commands
-
 
 class p2(object):
     def __init__(self):
@@ -234,7 +235,6 @@ class p2(object):
         statdata["written"] = self.get_mem_stat("w")
         return statdata
 
-
 def heatmap(data, filename, show=True):
     fig, ax = plt.subplots()
     for d, m in [("read", "."), ("written", "o"), ("exec", "x")]:
@@ -280,10 +280,6 @@ class drawbot(object):
         self.grid = defaultdict(lambda: defaultdict(int))
         self.grid[0][0] = startval
         self.steps = 0
-        import curses
-        self.stdscr = curses.initscr()
-        self.stdscr.clear()
-        self.stdscr.addstr(self.off_y, self.off_x, "^")
 
     def get_color(self):
         return self.grid[self.y][self.x]
@@ -297,28 +293,70 @@ class drawbot(object):
 
     def move(self):
         x,y = self.step[self.directions.index(self.direction)]
-        v = self.grid[self.y][self.x]
-        self.stdscr.refresh()
-        try:
-            if v == 1:
-                 self.stdscr.addstr(self.off_y+self.y, self.off_x+self.x, '█')
-            else:
-                self.stdscr.addstr(self.off_y+self.y, self.off_x+self.x, '░')
-        except: pass
         self.x += x
         self.y -= y
-        try:
-            self.stdscr.addstr(self.off_y+self.y, self.off_x+self.x, '' +self.drawdir[self.directions.index(self.direction)])
-        except: pass
         self.steps += 1
 
     def colored(self):
         return sum(map(len, self.grid.values()))
 
+def print_grid(self):
+    print(chr(27)+'[2j')
+    print('\033c')
+    print('\x1bc')
+    cnt = 0
+    RANGEX=-30,50
+    RANGEY=-10,20
+    SLEEP=0.0125
+    for y in range(RANGEY[1], RANGEY[0], -1):
+        for x in range(RANGEX[0], RANGEX[1], 1):
+            if x == self.x and y == self.y:
+                print(self.drawdir[self.directions.index(self.direction)], end='')
+                continue
+            if y not in self.grid or not x in self.grid[y]:
+                print(' ', end='')
+                continue
+            v = self.grid[y][x]
+            cnt += 1
+            if v == 1:
+                print(termcolor.colored('█', 'white'), end = '')
+            else:
+                print(termcolor.colored('░', 'white'), end = '')
+
+        print()
+    print(cnt)
+    time.sleep(SLEEP)
+
 def part1():
     r = drawbot(0,0,0)
     p = p2()
     p.set_prog(inp)
+    
+    fig = plt.figure()
+
+    RANGEX=-30,50
+    RANGEY=-10,20
+    SLEEP=0.0125
+    grid = [[-1 for x in range(RANGEY[1], RANGEY[0], -1)] for y in range(RANGEX[0], RANGEX[1], 1)]
+    plot =plt.matshow(grid, fignum=0)
+    def update(frame):
+            p.add_input(r.get_color())
+            p.run()
+            outp = p.output
+            r.command(*outp)
+            p.output.clear()
+            r.move()
+            grid = [[-1 for x in range(RANGEY[1], RANGEY[0], -1)] for y in range(RANGEX[0], RANGEX[1], 1)]
+            for y in range(RANGEY[1], RANGEY[0], -1):
+                for x in range(RANGEX[0], RANGEX[1], 1):
+                    if y not in r.grid or not x in r.grid[y]:
+                        grid[x][y] = -1
+                        continue
+                    grid[x][y] = r.grid[y][x]
+            grid.append(grid)
+            plot.set_data(grid)
+            return [plot]
+
     while not p.halt:
         p.add_input(r.get_color())
         p.run()
@@ -326,7 +364,18 @@ def part1():
         r.command(*outp)
         p.output.clear()
         r.move()
-        time.sleep(0.00124)
+    grid = [[-1 for x in range(RANGEY[1], RANGEY[0], -1)] for y in range(RANGEX[0], RANGEX[1], 1)]
+    for y in range(RANGEY[1], RANGEY[0], -1):
+        for x in range(RANGEX[0], RANGEX[1], 1):
+            if y not in r.grid or not x in r.grid[y]:
+                grid[y][x] = -1
+                continue
+            grid[x][y] = r.grid[y][x]
+    plot =plt.matshow(grid)
+    anim = FuncAnimation(fig, update, interval = 10, blit=True)
+
+    plt.show()
+
     pass
 
 def part2():
@@ -340,7 +389,6 @@ def part2():
         r.command(*outp)
         p.output.clear()
         r.move()
-        time.sleep(0.0124)
     pass
 
 

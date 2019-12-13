@@ -16,17 +16,8 @@ class moon(object):
     def __init__(self, name, pos):
         self.name = name
         self.pos = pos
+        self.initial = pos
         self.vel = {'x':0, 'y':0, 'z': 0}
-        self.hist = {'x':{}, 'y':{}, 'z': {}}
-        self.asteps = {'x':0, 'y':0, 'z': 0}
-        self.steps = 0
-        self.rotate = {'x':False, 'y':False, 'z': False}
-
-    @property
-    def posidx(self):
-        posidx = 'x{}y{}z{}x{}y{}z{}'.format(self.pos['x'], self.pos['y'], self.pos['z'], self.vel['x'], self.vel['y'], self.vel['z'])
-        posidx = 'x{}y{}z{}'.format(self.pos['x'], self.pos['y'], self.pos['z'], self.vel['x'], self.vel['y'], self.vel['z'])
-        return posidx
 
     def apply_gravity(self, moon2):
         for axis in ['x', 'y', 'z']:
@@ -36,24 +27,16 @@ class moon(object):
                 self.vel[axis] += 1
 
     def apply_velocity(self):
-        self.steps += 1
-        for axis in ['x', 'y', 'z']:
-            if not self.rotate[axis]:
-                if self.had_position():
-                    self.rotate = True
-                    self.astep[axis] = self.steps
-                    print(self.name, self.asteps)
         for axis in ['x', 'y', 'z']:
             self.pos[axis] += self.vel[axis]
-            self.hist[axis][self.posidx] = 1
-
-    def had_position(self):
-        return self.posidx in self.hist
 
     def energy(self):
         pot = sum(map(abs, self.pos.values()))
         kin = sum(map(abs, self.vel.values()))
         return pot*kin
+
+    def __str__(self):
+        return ('pos=<x={0:3d}, y={1:3d}, z={2:3d} vel=<x={3:3d}, y={4:3d}, z={5:3d}>'.format(self.pos['x'], self.pos['y'], self.pos['z'], self.vel['x'], self.vel['y'], self.vel['z']))
 
 
 def p1():
@@ -63,25 +46,22 @@ def p1():
         moons.append(moon(name, m))
         name += 1
     for m in moons:
-        print('pos=<x={0:3d}, y={1:3d}, z={2:3d} vel=<x={3:3d}, y={4:3d}, z={5:3d}>'.format(m.pos['x'], m.pos['y'], m.pos['z'], m.vel['x'], m.vel['y'], m.vel['z']))
-    for s in range(0, 14):
+        print(f'{m}')
+    for s in range(0, 1000):
         for p in permutations(moons, 2):
-            #print(list(map(lambda x: x.name, p)))
             p[0].apply_gravity(p[1])
         for m in moons:
             m.apply_velocity()
         for m in moons:
-            continue
-            print('pos=<x={0:3d}, y={1:3d}, z={2:3d}'.format(m.pos['x'], m.pos['y'], m.pos['z']))
+            print(f'{m}')
+        print()
     for m in moons:
-        print('pos=<x={0:3d}, y={1:3d}, z={2:3d} vel=<x={3:3d}, y={4:3d}, z={5:3d}>'.format(m.pos['x'], m.pos['y'], m.pos['z'], m.vel['x'], m.vel['y'], m.vel['z']))
+        print(f'{m}')
     return sum(map(moon.energy, moons))
 
 
 from functools import reduce    # need this line if you're using Python3.x
-
 from math import gcd 
-#from fractions import gcd # If python version is below 3.5
 from functools import reduce # Needed for Python3.x
 
 def lcm(denominators):
@@ -89,34 +69,34 @@ def lcm(denominators):
 
 def p2():
     moons = []
+    f = {}
     name = 0
     for m in inp:
         moons.append(moon(name, m))
         name += 1
     for m in moons:
-        print('pos=<x={0:3d}, y={1:3d}, z={2:3d}'.format(m.pos['x'], m.pos['y'], m.pos['z']))
-    steps = 22972854
-    csteps = [160, 101505526, 11939094, 22972854]
-    bsteps = steps
-    step = max(csteps)
+        print(f'{m}')
+    for axis in ['x', 'y', 'z']:
+        f[axis] = {}
+    steps = 0
+    rtt = {'x':0, 'y':0, 'z': 0}
     while True:
         for p in permutations(moons, 2):
             p[0].apply_gravity(p[1])
         for m in moons:
             m.apply_velocity()
-        if all(map(lambda m: m.rotate, moons)):
-            csteps = list(map(lambda m: m.steps, moons))
-            print(csteps)
-            print(lcm(csteps))
-            return lcm(csteps)
-            bsteps = steps
-            step = max(csteps)
-            while True:
-                bsteps += 1
-                if all(map(lambda i: bsteps%csteps[i] == 0, [0,1,2,3])):
-                    return bsteps
+        for axis in ['x', 'y', 'z']:
+            idx = ''.join(map(lambda x: '.{}:{}{}'.format(x.name, x.pos[axis], x.vel[axis]), moons))
+            if rtt[axis] == 0 and idx in f[axis]:
+                rtt[axis] = steps
+                print(idx, steps)
+            f[axis][idx] = 1
+        if all(map(lambda x: x != 0, rtt.values())):
+            print(rtt)
+            break
+        steps += 1
 
-    return steps
+    return lcm(rtt.values())
 
 def main():
     if part_one():

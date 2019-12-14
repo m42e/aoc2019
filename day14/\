@@ -14,18 +14,23 @@ def inp_decode(x):
 inp = get_input(inp_decode)
 _logger = get_logger()
 
-reactions = {}
-for reaction in inp:
-    a, r = reaction[1]
-    reactions[r] = reaction
-def calculate(nr):
-    needed = {"FUEL": nr}
+
+def p1():
+    cnt = 0
+    print(inp)
+    reactions = {}
+    for reaction in inp:
+        a, r = reaction[1]
+        reactions[r] = reaction
+    needed = {"FUEL": 1}
     available = {}
     while len(needed) != 1 or not "ORE" in needed:
         cneeded = needed.copy()
         todel = []
+        print(needed)
         needednow = {}
         for n in cneeded:
+            print(n, ":", needed[n])
             if n == "ORE":
                 continue
             start = reactions[n]
@@ -38,6 +43,7 @@ def calculate(nr):
                     needed[n] = 0
                     continue
             needednow[n] = needed[n]
+        print("now", needednow)
         steps = {}
         fac = {}
         for n in needednow:
@@ -49,39 +55,74 @@ def calculate(nr):
                 fac[n] = needednow[n] // producable
                 if needednow[n] % producable != 0:
                     fac[n] += 1
+            print(n, start[1], "=>", producable, needednow[n], fac[n])
             steps[n] = fac[n]
+        print("steps", steps)
+        print()
         for n in needednow:
+            print(n)
             start = reactions[n]
             for elem in start[0]:
                 amount = int(elem[0]) * fac[n]
+                print(elem, amount)
                 if elem[1] in needed:
+                    print("               ", needed[elem[1]], amount)
                     needed[elem[1]] += amount
                 else:
                     needed[elem[1]] = amount
                 amount - needed[n]
+                print(elem[0], amount)
             needed[n] -= int(start[1][0]) * fac[n]
             available[n] = -min(0, needed[n])
             needed[n] = max(0, needed[n])
+            print("needed", needed)
+            print("available", available)
 
         for d in needed.copy():
             if needed[d] == 0:
                 del needed[d]
-    return needed['ORE']
+        print(needed)
+        print(available)
+        print("---==============================---")
+        cnt += 1
+        if cnt == 66:
+            return
 
-def p1():
-    return calculate(1)
+    print(needed)
+    return None
 
 
 def p2():
-    nr = 1
-    step = 100000
-    while step > 0:
-        while calculate(nr) < 1000000000000:
-            nr += step
-        nr -= step
-        step = step//2
-        print(step)
-    return nr
+    cnt = 0
+    reactions = {}
+    for reaction in inp:
+        a, r = reaction[1]
+        reactions[r] = reaction
+    formula = {"FUEL": 1}
+
+    def update_needed(x, depth=1):
+        for n in x:
+            if n == "ORE":
+                continue
+            if str(x[n]).isnumeric():
+                fac = int(x[n])
+                x[n] = {}
+                for ip in reactions[n][0]:
+                    x[n][ip[1]] = fac * int(ip[0])
+                update_needed(x[n], depth + 1)
+
+    update_needed(formula)
+    from pprint import pprint
+    #pprint(formula)
+    calculated = {}
+    def calc(form):
+        if isinstance(form, dict):
+            return sum(map(calc, form.values()))
+        if str(form).isnumeric():
+            return int(form)
+
+    return sum(calc(formula.values())
+
 
 def main():
     if part_one():

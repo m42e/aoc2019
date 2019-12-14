@@ -18,6 +18,8 @@ reactions = {}
 for reaction in inp:
     a, r = reaction[1]
     reactions[r] = reaction
+
+
 def calculate(nr):
     needed = {"FUEL": nr}
     available = {}
@@ -30,15 +32,9 @@ def calculate(nr):
                 continue
             start = reactions[n]
             if n in available:
-                if needed[n] > available[n]:
-                    needed[n] -= available[n]
-                    available[n] -= available[n]
-                else:
-                    available[n] -= needed[n]
-                    needed[n] = 0
-                    continue
+                needed[n] -= available[n]
+                available[n] -= available[n]
             needednow[n] = needed[n]
-        steps = {}
         fac = {}
         for n in needednow:
             start = reactions[n]
@@ -49,7 +45,6 @@ def calculate(nr):
                 fac[n] = needednow[n] // producable
                 if needednow[n] % producable != 0:
                     fac[n] += 1
-            steps[n] = fac[n]
         for n in needednow:
             start = reactions[n]
             for elem in start[0]:
@@ -60,13 +55,16 @@ def calculate(nr):
                     needed[elem[1]] = amount
                 amount - needed[n]
             needed[n] -= int(start[1][0]) * fac[n]
-            available[n] = -min(0, needed[n])
-            needed[n] = max(0, needed[n])
+            if needed[n] < 0:
+                needed[n] = 0
+            else:
+                needed[n] = needed[n]
 
-        for d in needed.copy():
+        for d in list(needed.keys()):
             if needed[d] == 0:
                 del needed[d]
-    return needed['ORE']
+    return needed["ORE"]
+
 
 def p1():
     return calculate(1)
@@ -79,9 +77,9 @@ def p2():
         while calculate(nr) < 1000000000000:
             nr += step
         nr -= step
-        step = step//2
-        print(step)
+        step = step // 10
     return nr
+
 
 def main():
     if part_one():

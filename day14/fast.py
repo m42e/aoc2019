@@ -111,6 +111,7 @@ def calculate(nr):
                 amount - needed[n]
             needed[n] -= start[1][0] * fac[n]
             if needed[n] < 0:
+                available[n] = -needed[n]
                 needed[n] = 0
             else:
                 needed[n] = needed[n]

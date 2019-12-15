@@ -1,5 +1,6 @@
 import sys
 from collections import defaultdict, namedtuple
+from .input import read_single_keypress
 import fileinput
 
 opcode = namedtuple("opcode", ["name", "parameter"])
@@ -101,6 +102,7 @@ class Assembler(object):
 
         return instruction
 
+
 class Disassembler(object):
     @classmethod
     def disassemble(cls, prog):
@@ -126,12 +128,22 @@ class Disassembler(object):
                 )
         return commands
 
+class Debugger(object):
+    def __init__(self, p: Processor):
+        self.processor = p
 
 class Processor(object):
-    def __init__(self):
+    def __init__(self, debug=True, interactive=False):
+        self.debug = debug
         self.hardreset()
         self.processed_steps = []
         self._processing = False
+        self.interactive = interactive
+        self.continue_steps = 0
+        self.cont = False
+        self.stopat = []
+        if self.interactive:
+            print("Interactive mode")
 
     def hardreset(self):
         self.tinput = []
@@ -152,7 +164,10 @@ class Processor(object):
 
     def set_prog(self, prog):
         for i, f in enumerate(prog):
-            self.mem[i] = [{"v": f, "r": 0, "e": 0, "w": {}}]
+            if self.debug:
+                self.mem[i] = [{"v": f, "r": 0, "e": 0, "w": {}}]
+            else:
+                self.mem[i] = [{"v": f, "r": 0, "e": 0, "w": 0}]
 
     def add_input(self, inp):
         self.tinput.append(inp)
@@ -160,22 +175,26 @@ class Processor(object):
     def fetch_and_decode(self):
         opcode = self.read(self.ip, execute=True)
         params = [opcode % 100]
-        self.decodeinfo = {"ip": self.ip, "opcode": opcode, "params": {}}
+        if self.debug:
+            self.decodeinfo = {"ip": self.ip, "opcode": opcode, "params": {}}
         for pindex, param in enumerate(opcodes[params[0]].parameter, start=1):
             encoding = (opcode // pow(10, pindex + 1)) % 10
             val = self.read(self.ip + pindex)
             if encoding == 2:
                 val += self.relativebase[-1]
-            self.decodeinfo["params"][pindex] = {
-                "position": self.ip + pindex,
-                "value": val,
-                "mode": encoding,
-                "paramtype": param,
-            }
+            if self.debug:
+                self.decodeinfo["params"][pindex] = {
+                    "position": self.ip + pindex,
+                    "value": val,
+                    "mode": encoding,
+                    "modename": ['Addr', 'Value', 'Relative'][encoding],
+                    "paramtype": param,
+                }
             if param == "i":
                 if encoding == 0 or encoding == 2:
                     val = self.read(val)
-            self.decodeinfo["params"][pindex]["decoded"] = val
+            if self.debug:
+                self.decodeinfo["params"][pindex]["decoded"] = val
             params.append(val)
         return params
 
@@ -187,16 +206,65 @@ class Processor(object):
         params = fetched[1:]
         ip = self.ip
         getattr(self, f"opcode{commandcode:02d}")(params)
-        self.processed_steps.append(
-            {
-                "decodinginfo": self.decodeinfo,
-                "opcode": commandcode,
-                "ip": ip,
-                "params": params,
-                "result": self.result,
-                "processing": self._processing,
-            }
-        )
+        if self.debug:
+            self.processed_steps.append(
+                {
+                    "decodinginfo": self.decodeinfo,
+                    "opcode": commandcode,
+                    "ip": ip,
+                    "params": params,
+                    "result": self.result,
+                    "processing": self._processing,
+                }
+            )
+        if self.interactive:
+            if self._waitforinput:
+                val = input("(input)>")
+                self.add_input(int(val))
+            if self.cont:
+                if ip == self.stop:
+                    self.cont = False
+            if not self.cont:
+                self.print_memory('EXEC:', max(ip-3, 0), 7, ip)
+                for id, param in self.decodeinfo['params'].items():
+                    if param['mode'] == 0:
+                        pos = param['value']
+                    elif param['mode'] == 1:
+                        pos = param['position']
+                    if param['mode'] == 2:
+                        pos = self.relativebase + param['value']
+                    self.print_memory('Param {id}: {modename:8s}: {decoded}'.format(id=id, **param), max(param['position']-3, 0), 7, param['position'])
+                print('Result: {}'.format(self.result))
+
+                if self.continue_steps > 0:
+                    self.continue_steps -= 1
+                else:
+                    val = ''
+                    while True:
+                        try:
+                            val = input(">")
+                        except KeyboardInterrupt:
+                            self._processing = False
+                            break
+                        if len(val) == 0:
+                            break
+                    if val != '':
+                        if val.startswith('break'):
+                            _, stop = val.split(' ')
+                        if val.isnumeric():
+                            self.continue_steps = int(val)
+
+
+    def print_memory(self, name, start, nr, point):
+        cells = []
+        for cellid in range(start, start + nr):
+            cell = self.mem[cellid]
+            marker = '*' if cellid == point else ' '
+            cc = "{0}{1:8d}".format(marker, cell[-1]["v"])
+            cells.append(cc)
+
+        print("    " + name)
+        print("    " + " | ".join(cells))
 
     def run(self):
         self._processing = True
@@ -204,7 +272,15 @@ class Processor(object):
             self.step()
 
     def write(self, pos, value):
-        self.mem[pos].append({"v": value, "r": 0, "e": 0, "w": self.decodeinfo})
+        if self.debug:
+            self.mem[pos].append({"v": value, "r": 0, "e": 0, "w": self.decodeinfo})
+        else:
+            self.mem[pos][-1]["w"] += 1
+            self.mem[pos][-1]["v"] = value
+
+        if self.interactive:
+            print('    Write to {:5d}: {:8d}'.format(pos, value))
+
         return self.mem[pos][-1]["v"]
 
     def read(self, pos, execute=False):
@@ -228,6 +304,7 @@ class Processor(object):
     def opcode03(self, params):
         if self.tinput_pos == len(self.tinput):
             self._processing = False
+            self._waitforinput = True
             self.result = "no read"
             return self.ip
         elif isinstance(self.tinput, list):
@@ -235,6 +312,7 @@ class Processor(object):
             self.tinput_pos += 1
         else:
             res = self.tinput
+        self._waitforinput = False
         self.write(params[0], res)
         self.ip += 2
         self.result = res
@@ -355,28 +433,26 @@ def print_steps(p, params=False, file=sys.stderr):
         for di in m["decodinginfo"]["params"]:
             print("       {}".format(m["decodinginfo"]["params"][di]), file=file)
 
-def generate_jump_graph(p:Processor):
+
+def generate_jump_graph(p: Processor):
     lastjump = 1
     jumps = defaultdict(int)
     execflow = defaultdict(int)
-    jumps['start->1'] = 1
+    jumps["start->1"] = 1
     for _, m in enumerate(p.processed_steps):
-        if opcodes[m["opcode"]].name[0] == 'J':
-            execflow['{}->{}'.format(lastjump, m['ip'])] += 1
-            jumps['{}->{}'.format(m['ip'], m['params'][1])] += 1
-            lastjump = m['params'][1]
-    execflow['{}->{}'.format(lastjump, 'end')] = 1
+        if opcodes[m["opcode"]].name[0] == "J":
+            execflow["{}->{}".format(lastjump, m["ip"])] += 1
+            jumps["{}->{}".format(m["ip"], m["params"][1])] += 1
+            lastjump = m["params"][1]
+    execflow["{}->{}".format(lastjump, "end")] = 1
 
-    graph = ['digraph G {']
+    graph = ["digraph G {"]
     for edge, count in jumps.items():
         graph.append('{0} [label="{1}"];'.format(edge, count))
     for edge, count in execflow.items():
         graph.append('{0} [label="{1}", style=dotted];'.format(edge, count))
-    graph.append('}')
-    return '\n'.join(graph)
-
-
-
+    graph.append("}")
+    return "\n".join(graph)
 
 
 def print_stats(stat):

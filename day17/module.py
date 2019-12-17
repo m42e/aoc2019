@@ -38,6 +38,7 @@ def p2():
 
     dirs = ['^',  '<', 'v','>']
     dirs_cnt = [(-1, 0),  (0, -1), (1, 0),(0, 1)]
+    dirs_next = {(-1, 0): ,  (0, -1), (1, 0),(0, 1)}
 
     grid = (''.join(map(chr, p.output))).split('\n')
     print('\n'.join(grid))
@@ -66,6 +67,11 @@ def p2():
             path = btpath +[cur]
 
     last = path[0]
+    dire = direction
+    for f in path[1:]:
+        td = (f[0] - last[0], f[1] - last[1])
+        newdir = dirs_cnt.index(td)
+        if direction == newdir:
 
     return pos, direction
 
